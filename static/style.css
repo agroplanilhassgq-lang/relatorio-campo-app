@@ -1,0 +1,151 @@
+
+body {
+  margin: 0;
+  background: #e9edf2;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #1f2937;
+}
+
+.container, .relatorio {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
+}
+
+.hero, .cabecalho-relatorio {
+  background: linear-gradient(135deg, #1f2937, #374151);
+  color: white;
+  border-radius: 18px;
+  padding: 30px;
+  margin-bottom: 24px;
+}
+
+.hero h1, .cabecalho-relatorio h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.hero p {
+  margin-top: 8px;
+  opacity: 0.85;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  border-left: 6px solid #374151;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 14px;
+}
+
+input, textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  background: #f8fafc;
+}
+
+textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.titulo-linha, .acoes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-principal, .btn-secundario {
+  border: none;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-principal {
+  background: #1f2937;
+  color: white;
+}
+
+.btn-secundario {
+  background: #dbe4ee;
+}
+
+.texto {
+  white-space: pre-wrap;
+  line-height: 1.8;
+}
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.foto-card {
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  overflow: hidden;
+  page-break-inside: avoid;
+}
+
+.foto-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #cbd5e1;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .texto {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .galeria {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .foto-card img {
+    height: 220px;
+  }
+
+  @bottom-right {
+    content: "Página " counter(page);
+  }
+}

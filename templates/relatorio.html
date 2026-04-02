@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ titulo_relatorio }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="relatorio-body">
+<div class="relatorio">
+
+  <header class="cabecalho-relatorio">
+    <div>
+      <h1>{{ titulo_relatorio }}</h1>
+      <p>Emitido em {{ dados.data_relatorio }}</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <div class="grid">
+      <div><strong>Chassi:</strong> {{ dados.chassi }}</div>
+      <div><strong>Modelo:</strong> {{ dados.modelo }}</div>
+      <div><strong>Proprietário:</strong> {{ dados.proprietario }}</div>
+      <div><strong>Cidade:</strong> {{ dados.cidade }}</div>
+    </div>
+
+    <div class="tecnicos-box">
+      <strong>Técnicos:</strong>
+      <ul>
+        {% for tecnico in dados.tecnicos %}
+          <li>{{ tecnico }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Informação Primária</h2>
+    <div class="texto">{{ dados.informacao }}</div>
+  </section>
+
+  <section class="card">
+    <h2>Situação Encontrada</h2>
+    <div class="texto">{{ dados.situacao }}</div>
+  </section>
+
+  <section class="card">
+    <h2>Serviço Realizado</h2>
+    <div class="texto">{{ dados.servico }}</div>
+  </section>
+
+  {% if fotos %}
+  <section class="card">
+    <h2>Registro Fotográfico</h2>
+    <div class="galeria">
+      {% for foto in fotos %}
+      <div class="foto-card">
+        <img src="{{ url_for('static', filename='uploads/' + foto) }}">
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="acoes no-print">
+    <button onclick="window.print()" class="btn-principal">Exportar PDF / Imprimir</button>
+  </div>
+
+</div>
+</body>
+</html>

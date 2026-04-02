@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Campo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+  <header class="hero">
+    <div>
+      <h1>Relatório de Campo</h1>
+      <p>Sistema industrial para registro técnico, fotos e exportação PDF</p>
+    </div>
+  </header>
+
+  <form action="/gerar_relatorio" method="POST" enctype="multipart/form-data">
+
+    <section class="card">
+      <h2>Dados Gerais</h2>
+      <div class="grid">
+        <input type="text" name="chassi" placeholder="Chassi" value="{{ rascunho.get('chassi','') }}" required>
+        <input type="text" name="modelo" placeholder="Modelo" value="{{ rascunho.get('modelo','') }}">
+        <input type="text" name="proprietario" placeholder="Proprietário" value="{{ rascunho.get('proprietario','') }}">
+        <input type="text" name="cidade" placeholder="Cidade" value="{{ rascunho.get('cidade','') }}">
+        <input type="datetime-local" name="data_relatorio" value="{{ rascunho.get('data_relatorio','') }}">
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="titulo-linha">
+        <h2>Técnicos</h2>
+        <button type="button" class="btn-secundario" onclick="adicionarTecnico()">+ Técnico</button>
+      </div>
+      <div id="tecnicos-container">
+        {% if rascunho.get('tecnicos') %}
+          {% for tecnico in rascunho.get('tecnicos') %}
+            <input type="text" name="tecnicos[]" value="{{ tecnico }}" placeholder="Nome do técnico">
+          {% endfor %}
+        {% else %}
+          <input type="text" name="tecnicos[]" placeholder="Nome do técnico">
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Informação Primária</h2>
+      <textarea name="informacao">{{ rascunho.get('informacao','') }}</textarea>
+    </section>
+
+    <section class="card">
+      <h2>Situação Encontrada</h2>
+      <textarea name="situacao">{{ rascunho.get('situacao','') }}</textarea>
+    </section>
+
+    <section class="card">
+      <h2>Serviço Realizado</h2>
+      <textarea name="servico">{{ rascunho.get('servico','') }}</textarea>
+    </section>
+
+    <section class="card">
+      <h2>Fotos</h2>
+      <input type="file" name="fotos" multiple accept="image/*">
+    </section>
+
+    <div class="acoes">
+      <button formaction="/salvar_rascunho" formmethod="POST" class="btn-secundario">Salvar Rascunho</button>
+      <button type="submit" class="btn-principal">Gerar Relatório</button>
+    </div>
+  </form>
+</div>
+
+<script>
+function adicionarTecnico() {
+  const container = document.getElementById('tecnicos-container');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.name = 'tecnicos[]';
+  input.placeholder = 'Nome do técnico';
+  container.appendChild(input);
+}
+</script>
+</body>
+</html>

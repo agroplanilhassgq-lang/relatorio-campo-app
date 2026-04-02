@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Salvo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+
+  <div class="topo">
+    <img src="{{ url_for('static', filename='logo.png') }}" class="logo" onerror="this.style.display='none'">
+    <div>
+      <h1>Relatório de Campo</h1>
+      <p>Assistência Técnica</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p><strong>Data:</strong> {{ dados.data_relatorio }}</p>
+    <p><strong>Chassi:</strong> {{ dados.chassi }}</p>
+    <p><strong>Modelo:</strong> {{ dados.modelo }}</p>
+    <p><strong>Proprietário:</strong> {{ dados.proprietario }}</p>
+    <p><strong>Cidade:</strong> {{ dados.cidade }}</p>
+    <p><strong>Técnicos:</strong></p>
+    <ul>
+      {% for tecnico in dados.tecnicos %}
+      <li>{{ tecnico }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Informação Primária</h2>
+    <div class="texto-relatorio">{{ dados.informacao }}</div>
+  </div>
+
+  <div class="card">
+    <h2>Situação Encontrada</h2>
+    <div class="texto-relatorio">{{ dados.situacao }}</div>
+  </div>
+
+  <div class="card">
+    <h2>Serviço Realizado</h2>
+    <div class="texto-relatorio">{{ dados.servico }}</div>
+  </div>
+
+  <div class="card">
+    <h2>Fotos Enviadas</h2>
+    <div class="galeria">
+      {% for foto in fotos %}
+      <div class="foto-container">
+        <img src="{{ url_for('static', filename='uploads/' + foto) }}" class="foto">
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <button onclick="window.print()" class="btn">
+      Exportar PDF / Imprimir
+    </button>
+  </div>
+
+</div>
+</body>
+</html>
