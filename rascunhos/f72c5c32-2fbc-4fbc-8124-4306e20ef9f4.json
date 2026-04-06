@@ -1,0 +1,22 @@
+{
+  "relatorio_id": "f72c5c32-2fbc-4fbc-8124-4306e20ef9f4",
+  "titulo_relatorio": "Relatório de Campo - Teste - 06-04-2026",
+  "chassi": "Teste",
+  "modelo": "Teste",
+  "proprietario": "Teste",
+  "cidade": "Teste",
+  "data_relatorio": "2026-04-06T13:49",
+  "tecnicos": [
+    "Teste"
+  ],
+  "informacao": "Teste",
+  "situacao": "Teste",
+  "servico": "Teste",
+  "fotos": [
+    "20260406134930276539_Captura_de_tela_2026-03-02_142831.png",
+    "20260406134930278563_Captura_de_tela_2026-03-02_145521.png",
+    "20260406134930280325_Captura_de_tela_2026-03-02_145548.png",
+    "20260406134930282228_Captura_de_tela_2026-03-02_145639.png"
+  ],
+  "ultima_edicao": "06/04/2026 13:49"
+}
