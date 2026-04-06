@@ -1,2 +1,49 @@
 <!DOCTYPE html>
-<html><body><h1>Tela de Relatórios em Andamento</h1><p>Inclui edição, salvar rascunho e reabrir.</p></body></html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatórios em Andamento</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <div>
+        <h1>Relatórios de Campo</h1>
+        <p>Gerencie relatórios em andamento e finalizados</p>
+      </div>
+
+      <a href="{{ url_for('novo_relatorio') }}" class="btn-principal">
+        + Novo Relatório
+      </a>
+    </div>
+
+    <div class="dashboard-grid">
+      {% for rascunho in rascunhos %}
+      <a href="{{ url_for('editar_relatorio', relatorio_id=rascunho.id) }}" class="card-relatorio">
+        <div class="card-topo">
+          <h2>{{ rascunho.titulo }}</h2>
+          <span class="badge-status">Em andamento</span>
+        </div>
+
+        <div class="card-info">
+          <p><strong>Chassi:</strong> {{ rascunho.chassi }}</p>
+          <p><strong>Data:</strong> {{ rascunho.data_relatorio }}</p>
+          <p><strong>Última edição:</strong> {{ rascunho.ultima_edicao }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if not rascunhos %}
+    <div class="sem-relatorios">
+      <h2>Nenhum relatório cadastrado</h2>
+      <p>Clique em “Novo Relatório” para começar.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</body>
+</html>

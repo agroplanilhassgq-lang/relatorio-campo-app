@@ -1,2 +1,147 @@
 <!DOCTYPE html>
-<html><body><h1>Formulário Atualizado</h1><p>Permite fotos da câmera, salvar parcial e continuar depois.</p></body></html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Campo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="form-body">
+
+  <div class="form-container">
+
+    <div class="top-bar">
+      <div>
+        <h1>Relatório de Campo</h1>
+        <p>Preencha os dados abaixo</p>
+      </div>
+
+      <a href="{{ url_for('dashboard') }}" class="btn-secundario">
+        Voltar
+      </a>
+    </div>
+
+    <form action="{{ url_for('salvar_draft') }}" method="POST" enctype="multipart/form-data">
+
+      <input type="hidden" name="relatorio_id" value="{{ rascunho.relatorio_id }}">
+
+      <div class="card-form">
+        <h2>Dados Gerais</h2>
+
+        <div class="grid-2">
+          <div class="campo">
+            <label>Chassi</label>
+            <input type="text" name="chassi" value="{{ rascunho.chassi or '' }}">
+          </div>
+
+          <div class="campo">
+            <label>Modelo</label>
+            <input type="text" name="modelo" value="{{ rascunho.modelo or '' }}">
+          </div>
+
+          <div class="campo">
+            <label>Proprietário</label>
+            <input type="text" name="proprietario" value="{{ rascunho.proprietario or '' }}">
+          </div>
+
+          <div class="campo">
+            <label>Cidade</label>
+            <input type="text" name="cidade" value="{{ rascunho.cidade or '' }}">
+          </div>
+
+          <div class="campo">
+            <label>Data e Hora</label>
+            <input type="datetime-local" name="data_relatorio" value="{{ rascunho.data_relatorio or '' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="card-form">
+        <h2>Técnicos</h2>
+
+        <div id="tecnicos-container">
+          {% if rascunho.tecnicos %}
+            {% for tecnico in rascunho.tecnicos %}
+            <div class="campo tecnico-item">
+              <input type="text" name="tecnicos[]" value="{{ tecnico }}" placeholder="Nome do técnico">
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="campo tecnico-item">
+              <input type="text" name="tecnicos[]" placeholder="Nome do técnico">
+            </div>
+          {% endif %}
+        </div>
+
+        <button type="button" class="btn-secundario" onclick="adicionarTecnico()">
+          + Adicionar Técnico
+        </button>
+      </div>
+
+      <div class="card-form">
+        <h2>Detalhamento</h2>
+
+        <div class="campo">
+          <label>Informação Primária</label>
+          <textarea name="informacao">{{ rascunho.informacao or '' }}</textarea>
+        </div>
+
+        <div class="campo">
+          <label>Situação Encontrada</label>
+          <textarea name="situacao">{{ rascunho.situacao or '' }}</textarea>
+        </div>
+
+        <div class="campo">
+          <label>Serviço Realizado</label>
+          <textarea name="servico">{{ rascunho.servico or '' }}</textarea>
+        </div>
+      </div>
+
+      <div class="card-form">
+        <h2>Registro Fotográfico</h2>
+
+        <input type="file" name="fotos" multiple accept="image/*" capture="environment">
+
+        {% if rascunho.fotos %}
+        <div class="galeria-preview">
+          {% for foto in rascunho.fotos %}
+          <div class="preview-item">
+            <img src="{{ url_for('static', filename='uploads/' + foto) }}">
+            <input type="hidden" name="fotos_existentes" value="{{ foto }}">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="acoes-formulario">
+        <button type="submit" class="btn-principal">
+          Salvar Rascunho
+        </button>
+      </div>
+    </form>
+
+    <form action="{{ url_for('gerar_relatorio') }}" method="POST">
+      <input type="hidden" name="relatorio_id" value="{{ rascunho.relatorio_id }}">
+
+      <div class="acoes-formulario">
+        <button type="submit" class="btn-sucesso">
+          Gerar Relatório Final
+        </button>
+      </div>
+    </form>
+
+  </div>
+
+  <script>
+    function adicionarTecnico() {
+      const container = document.getElementById('tecnicos-container');
+      const div = document.createElement('div');
+      div.className = 'campo tecnico-item';
+      div.innerHTML = '<input type="text" name="tecnicos[]" placeholder="Nome do técnico">';
+      container.appendChild(div);
+    }
+  </script>
+
+</body>
+</html>
