@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
@@ -29,8 +29,11 @@ def listar_rascunhos():
                 'id': arquivo.replace('.json', ''),
                 'titulo': dados.get('titulo_relatorio', 'Relatório sem título'),
                 'chassi': dados.get('chassi', ''),
+                'modelo': dados.get('modelo', ''),
+                'proprietario': dados.get('proprietario', ''),
                 'data_relatorio': dados.get('data_relatorio', ''),
-                'ultima_edicao': dados.get('ultima_edicao', '')
+                'ultima_edicao': dados.get('ultima_edicao', ''),
+                'num_fotos': len(dados.get('fotos', []))
             })
 
     rascunhos.sort(key=lambda x: x.get('ultima_edicao', ''), reverse=True)
@@ -54,6 +57,16 @@ def salvar_rascunho(relatorio_id, dados):
 
     with open(caminho, 'w', encoding='utf-8') as f:
         json.dump(dados, f, ensure_ascii=False, indent=2)
+
+
+def formatar_data(data_str):
+    if not data_str:
+        return ''
+    try:
+        dt = datetime.strptime(data_str[:16], '%Y-%m-%dT%H:%M')
+        return dt.strftime('%d/%m/%Y %H:%M')
+    except Exception:
+        return data_str
 
 
 @app.route('/')
@@ -91,24 +104,33 @@ def salvar_draft():
 
     tecnicos = [t for t in request.form.getlist('tecnicos[]') if t.strip()]
 
-    data_relatorio = request.form.get('data_relatorio')
-    data_obj = datetime.strptime(data_relatorio[:10], '%Y-%m-%d')
+    data_relatorio = request.form.get('data_relatorio', '')
+    titulo_relatorio = 'Relatório de Campo'
 
-    titulo_relatorio = f"Relatório de Campo - {request.form.get('chassi')} - {data_obj.strftime('%d-%m-%Y')}"
+    if data_relatorio:
+        try:
+            data_obj = datetime.strptime(data_relatorio[:10], '%Y-%m-%d')
+            chassi = request.form.get('chassi') or 'S/N'
+            titulo_relatorio = f"Relatório de Campo - {chassi} - {data_obj.strftime('%d-%m-%Y')}"
+        except Exception:
+            pass
+
+    # Fotos existentes (que não foram removidas)
+    fotos_existentes = request.form.getlist('fotos_existentes')
 
     dados = {
         'relatorio_id': relatorio_id,
         'titulo_relatorio': titulo_relatorio,
-        'chassi': request.form.get('chassi'),
-        'modelo': request.form.get('modelo'),
-        'proprietario': request.form.get('proprietario'),
-        'cidade': request.form.get('cidade'),
+        'chassi': request.form.get('chassi', ''),
+        'modelo': request.form.get('modelo', ''),
+        'proprietario': request.form.get('proprietario', ''),
+        'cidade': request.form.get('cidade', ''),
         'data_relatorio': data_relatorio,
         'tecnicos': tecnicos,
-        'informacao': request.form.get('informacao'),
-        'situacao': request.form.get('situacao'),
-        'servico': request.form.get('servico'),
-        'fotos': request.form.getlist('fotos_existentes')
+        'informacao': request.form.get('informacao', ''),
+        'situacao': request.form.get('situacao', ''),
+        'servico': request.form.get('servico', ''),
+        'fotos': fotos_existentes
     }
 
     arquivos = request.files.getlist('fotos')
@@ -126,6 +148,25 @@ def salvar_draft():
     return redirect(url_for('editar_relatorio', relatorio_id=relatorio_id))
 
 
+@app.route('/excluir_rascunho/<relatorio_id>', methods=['POST'])
+def excluir_rascunho(relatorio_id):
+    caminho = os.path.join(DRAFTS_FOLDER, f'{relatorio_id}.json')
+
+    if os.path.exists(caminho):
+        # Remove fotos associadas ao rascunho
+        with open(caminho, 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+
+        for foto in dados.get('fotos', []):
+            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], foto)
+            if os.path.exists(foto_path):
+                os.remove(foto_path)
+
+        os.remove(caminho)
+
+    return redirect(url_for('dashboard'))
+
+
 @app.route('/gerar_relatorio', methods=['POST'])
 def gerar_relatorio():
     relatorio_id = request.form.get('relatorio_id') or str(uuid.uuid4())
@@ -135,8 +176,11 @@ def gerar_relatorio():
     if not dados:
         return redirect(url_for('dashboard'))
 
-    titulo_relatorio = dados.get('titulo_relatorio')
+    titulo_relatorio = dados.get('titulo_relatorio', 'Relatório de Campo')
     fotos_salvas = dados.get('fotos', [])
+
+    # Formata data para exibição
+    dados['data_formatada'] = formatar_data(dados.get('data_relatorio', ''))
 
     return render_template(
         'relatorio.html',

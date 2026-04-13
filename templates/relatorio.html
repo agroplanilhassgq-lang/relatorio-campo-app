@@ -10,100 +10,133 @@
 
   <div class="relatorio">
 
+    <!-- CABEÇALHO -->
     <header class="cabecalho-relatorio">
-      <div>
-        <h1>{{ titulo_relatorio }}</h1>
-        <p>Emitido em {{ dados.data_relatorio }}</p>
+      <div class="relatorio-header-print">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" onerror="this.style.display='none'">
+        <div>
+          <h1>{{ titulo_relatorio }}</h1>
+          <p>Emitido em {{ dados.data_formatada or dados.data_relatorio }}</p>
+        </div>
       </div>
-
-      <div class="no-print">
+      <div class="no-print" style="display:flex;gap:10px;flex-shrink:0">
+        <a href="{{ url_for('editar_relatorio', relatorio_id=dados.relatorio_id) }}" class="btn-secundario">
+          ← Editar
+        </a>
         <button onclick="window.print()" class="btn-principal">
-          Exportar PDF / Imprimir
+          🖨️ Imprimir / PDF
         </button>
       </div>
     </header>
 
+    <!-- DADOS GERAIS -->
     <section class="card">
       <h2>Dados Gerais</h2>
-
-      <div class="grid">
-        <div>
-          <strong>Chassi:</strong><br>
-          {{ dados.chassi }}
+      <div class="dados-grid">
+        <div class="dados-item">
+          <strong>Chassi</strong>
+          <span>{{ dados.chassi or '—' }}</span>
         </div>
-
-        <div>
-          <strong>Modelo:</strong><br>
-          {{ dados.modelo }}
+        <div class="dados-item">
+          <strong>Modelo</strong>
+          <span>{{ dados.modelo or '—' }}</span>
         </div>
-
-        <div>
-          <strong>Proprietário:</strong><br>
-          {{ dados.proprietario }}
+        <div class="dados-item">
+          <strong>Proprietário</strong>
+          <span>{{ dados.proprietario or '—' }}</span>
         </div>
-
-        <div>
-          <strong>Cidade:</strong><br>
-          {{ dados.cidade }}
+        <div class="dados-item">
+          <strong>Cidade / Fazenda</strong>
+          <span>{{ dados.cidade or '—' }}</span>
         </div>
-
-        <div>
-          <strong>Data do Atendimento:</strong><br>
-          {{ dados.data_relatorio }}
+        <div class="dados-item">
+          <strong>Data do Atendimento</strong>
+          <span>{{ dados.data_formatada or dados.data_relatorio or '—' }}</span>
         </div>
       </div>
 
+      {% if dados.tecnicos %}
       <div class="tecnicos-box">
-        <strong>Técnicos Responsáveis:</strong>
+        <strong>Técnicos Responsáveis</strong>
         <ul>
           {% for tecnico in dados.tecnicos %}
+          {% if tecnico %}
             <li>{{ tecnico }}</li>
+          {% endif %}
           {% endfor %}
         </ul>
       </div>
+      {% endif %}
     </section>
 
+    <!-- INFORMAÇÃO PRIMÁRIA -->
+    {% if dados.informacao %}
     <section class="card">
       <h2>Informação Primária</h2>
       <div class="texto">{{ dados.informacao }}</div>
     </section>
+    {% endif %}
 
+    <!-- SITUAÇÃO ENCONTRADA -->
+    {% if dados.situacao %}
     <section class="card">
       <h2>Situação Encontrada</h2>
       <div class="texto">{{ dados.situacao }}</div>
     </section>
+    {% endif %}
 
+    <!-- SERVIÇO REALIZADO -->
+    {% if dados.servico %}
     <section class="card">
       <h2>Serviço Realizado</h2>
       <div class="texto">{{ dados.servico }}</div>
     </section>
+    {% endif %}
 
+    <!-- REGISTRO FOTOGRÁFICO -->
     {% if fotos %}
       {% for grupo in fotos|batch(4, None) %}
-        <section class="card registro-fotografico page-break-inside">
-          <h2>
-            Registro Fotográfico
-            {% if loop.index > 1 %}
-              - Página {{ loop.index }}
+      <section class="card registro-fotografico">
+        <h2>
+          Registro Fotográfico
+          {% if loop.index > 1 %}— Página {{ loop.index }}{% endif %}
+        </h2>
+        <div class="galeria-pagina">
+          {% for foto in grupo %}
+            {% if foto %}
+            <div class="foto-card-pagina">
+              <img src="{{ url_for('static', filename='uploads/' + foto) }}" alt="Foto {{ loop.index }}">
+            </div>
             {% endif %}
-          </h2>
-
-          <div class="galeria-pagina">
-            {% for foto in grupo %}
-              <div class="foto-card-pagina">
-                {% if foto %}
-                  <img src="{{ url_for('static', filename='uploads/' + foto) }}" alt="Foto {{ loop.index }}">
-                {% endif %}
-              </div>
-            {% endfor %}
-          </div>
-        </section>
-
-        {% if not loop.last %}
-          <div class="page-break"></div>
-        {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+      {% if not loop.last %}<div class="page-break"></div>{% endif %}
       {% endfor %}
     {% endif %}
+
+    <!-- ASSINATURA -->
+    <section class="card">
+      <h2>Assinaturas</h2>
+      <div class="assinatura-grid">
+        <div class="assinatura-item">
+          <div style="height:50px"></div>
+          <div class="assinatura-linha"></div>
+          <div class="assinatura-label">
+            {% if dados.tecnicos and dados.tecnicos[0] %}
+              {{ dados.tecnicos[0] }} — Técnico Responsável
+            {% else %}
+              Técnico Responsável
+            {% endif %}
+          </div>
+        </div>
+        <div class="assinatura-item">
+          <div style="height:50px"></div>
+          <div class="assinatura-linha"></div>
+          <div class="assinatura-label">{{ dados.proprietario or 'Proprietário / Responsável' }}</div>
+        </div>
+      </div>
+    </section>
 
   </div>
 

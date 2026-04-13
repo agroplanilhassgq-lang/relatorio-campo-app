@@ -2,53 +2,55 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <title>Relatório de Campo</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="form-body">
 
+  <div id="offline-banner">Sem conexão — dados salvos no dispositivo</div>
+
   <div class="form-container">
 
     <div class="top-bar">
-      <div>
-        <h1>Relatório de Campo</h1>
-        <p>Preencha os dados abaixo</p>
+      <div class="header-left">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+        <div>
+          <h1>Relatório de Campo</h1>
+          <p>Preencha os dados abaixo</p>
+        </div>
       </div>
-
-      <a href="{{ url_for('dashboard') }}" class="btn-secundario">
-        Voltar
-      </a>
+      <a href="{{ url_for('dashboard') }}" class="btn-secundario">← Voltar</a>
     </div>
 
-    <form action="{{ url_for('salvar_draft') }}" method="POST" enctype="multipart/form-data">
+    <div class="autosave-status" id="autosave-status"></div>
+
+    <form id="form-relatorio" action="{{ url_for('salvar_draft') }}" method="POST" enctype="multipart/form-data">
 
       <input type="hidden" name="relatorio_id" value="{{ rascunho.relatorio_id }}">
 
+      <!-- DADOS GERAIS -->
       <div class="card-form">
         <h2>Dados Gerais</h2>
-
         <div class="grid-2">
           <div class="campo">
             <label>Chassi</label>
-            <input type="text" name="chassi" value="{{ rascunho.chassi or '' }}">
+            <input type="text" name="chassi" value="{{ rascunho.chassi or '' }}" placeholder="Ex: ABC123456">
           </div>
-
           <div class="campo">
             <label>Modelo</label>
-            <input type="text" name="modelo" value="{{ rascunho.modelo or '' }}">
+            <input type="text" name="modelo" value="{{ rascunho.modelo or '' }}" placeholder="Ex: Colhedora XZ 9000">
           </div>
-
           <div class="campo">
             <label>Proprietário</label>
-            <input type="text" name="proprietario" value="{{ rascunho.proprietario or '' }}">
+            <input type="text" name="proprietario" value="{{ rascunho.proprietario or '' }}" placeholder="Nome do proprietário">
           </div>
-
           <div class="campo">
-            <label>Cidade</label>
-            <input type="text" name="cidade" value="{{ rascunho.cidade or '' }}">
+            <label>Cidade / Fazenda</label>
+            <input type="text" name="cidade" value="{{ rascunho.cidade or '' }}" placeholder="Cidade ou nome da fazenda">
           </div>
-
           <div class="campo">
             <label>Data e Hora</label>
             <input type="datetime-local" name="data_relatorio" value="{{ rascunho.data_relatorio or '' }}">
@@ -56,91 +58,241 @@
         </div>
       </div>
 
+      <!-- TÉCNICOS -->
       <div class="card-form">
-        <h2>Técnicos</h2>
-
+        <h2>Técnicos Responsáveis</h2>
         <div id="tecnicos-container">
           {% if rascunho.tecnicos %}
             {% for tecnico in rascunho.tecnicos %}
-            <div class="campo tecnico-item">
+            <div class="tecnico-item">
               <input type="text" name="tecnicos[]" value="{{ tecnico }}" placeholder="Nome do técnico">
+              <button type="button" class="btn-remove-tecnico" onclick="removerTecnico(this)" title="Remover">×</button>
             </div>
             {% endfor %}
           {% else %}
-            <div class="campo tecnico-item">
+            <div class="tecnico-item">
               <input type="text" name="tecnicos[]" placeholder="Nome do técnico">
+              <button type="button" class="btn-remove-tecnico" onclick="removerTecnico(this)" title="Remover">×</button>
             </div>
           {% endif %}
         </div>
-
-        <button type="button" class="btn-secundario" onclick="adicionarTecnico()">
+        <button type="button" class="btn-secundario" onclick="adicionarTecnico()" style="margin-top:8px">
           + Adicionar Técnico
         </button>
       </div>
 
+      <!-- DETALHAMENTO -->
       <div class="card-form">
         <h2>Detalhamento</h2>
-
-        <div class="campo">
+        <div class="campo" style="margin-bottom:16px">
           <label>Informação Primária</label>
-          <textarea name="informacao">{{ rascunho.informacao or '' }}</textarea>
+          <textarea name="informacao" placeholder="Descreva a queixa inicial, solicitação ou motivo do atendimento...">{{ rascunho.informacao or '' }}</textarea>
         </div>
-
-        <div class="campo">
+        <div class="campo" style="margin-bottom:16px">
           <label>Situação Encontrada</label>
-          <textarea name="situacao">{{ rascunho.situacao or '' }}</textarea>
+          <textarea name="situacao" placeholder="Descreva o que foi encontrado ao chegar no local: diagnóstico, medições, condições...">{{ rascunho.situacao or '' }}</textarea>
         </div>
-
         <div class="campo">
           <label>Serviço Realizado</label>
-          <textarea name="servico">{{ rascunho.servico or '' }}</textarea>
+          <textarea name="servico" placeholder="Descreva os serviços executados, peças substituídas, ajustes realizados...">{{ rascunho.servico or '' }}</textarea>
         </div>
       </div>
 
+      <!-- FOTOS -->
       <div class="card-form">
         <h2>Registro Fotográfico</h2>
 
-        <input type="file" name="fotos" multiple accept="image/*" capture="environment">
-
-        {% if rascunho.fotos %}
-        <div class="galeria-preview">
-          {% for foto in rascunho.fotos %}
-          <div class="preview-item">
-            <img src="{{ url_for('static', filename='uploads/' + foto) }}">
-            <input type="hidden" name="fotos_existentes" value="{{ foto }}">
-          </div>
-          {% endfor %}
+        <div class="foto-upload-area" onclick="document.getElementById('input-fotos').click()">
+          <label class="foto-upload-label" for="input-fotos">
+            <span class="foto-upload-icon">📷</span>
+            <span class="foto-upload-text">
+              <strong>Toque para adicionar fotos</strong><br>
+              Câmera ou galeria — múltiplas fotos
+            </span>
+          </label>
+          <input type="file" id="input-fotos" name="fotos" multiple accept="image/*" capture="environment" onchange="previewNovasFotos(this)">
         </div>
-        {% endif %}
+
+        <div class="galeria-preview" id="galeria-preview">
+          {% if rascunho.fotos %}
+            {% for foto in rascunho.fotos %}
+            <div class="preview-item" id="preview-{{ foto }}">
+              <img src="{{ url_for('static', filename='uploads/' + foto) }}" alt="Foto">
+              <input type="hidden" name="fotos_existentes" value="{{ foto }}">
+              <button type="button" class="btn-remover-foto" onclick="removerFotoExistente('{{ foto }}')" title="Remover foto">×</button>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
       </div>
 
+      <!-- AÇÕES -->
       <div class="acoes-formulario">
         <button type="submit" class="btn-principal">
-          Salvar Rascunho
+          💾 Salvar Rascunho
+        </button>
+        <button type="button" class="btn-sucesso" onclick="gerarRelatorio()">
+          📄 Gerar Relatório Final
         </button>
       </div>
+
     </form>
 
-    <form action="{{ url_for('gerar_relatorio') }}" method="POST">
+    <form id="form-gerar" action="{{ url_for('gerar_relatorio') }}" method="POST" style="display:none">
       <input type="hidden" name="relatorio_id" value="{{ rascunho.relatorio_id }}">
-
-      <div class="acoes-formulario">
-        <button type="submit" class="btn-sucesso">
-          Gerar Relatório Final
-        </button>
-      </div>
     </form>
 
   </div>
 
   <script>
+    const RELATORIO_ID = '{{ rascunho.relatorio_id }}';
+    const STORAGE_KEY = 'draft_' + RELATORIO_ID;
+
+    // ─── OFFLINE INDICATOR ───────────────────────────────
+    function atualizarOffline() {
+      const banner = document.getElementById('offline-banner');
+      if (!navigator.onLine) {
+        banner.classList.add('visible');
+        document.body.classList.add('offline-active');
+      } else {
+        banner.classList.remove('visible');
+        document.body.classList.remove('offline-active');
+      }
+    }
+    window.addEventListener('online', atualizarOffline);
+    window.addEventListener('offline', atualizarOffline);
+    atualizarOffline();
+
+    // ─── SERVICE WORKER ───────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+
+    // ─── AUTO-SAVE LOCAL ──────────────────────────────────
+    function coletarFormLocal() {
+      const dados = {};
+      const form = document.getElementById('form-relatorio');
+      form.querySelectorAll('input[name], textarea[name]').forEach(el => {
+        if (el.type === 'file' || el.type === 'hidden') return;
+        const key = el.name;
+        if (key.endsWith('[]')) {
+          if (!dados[key]) dados[key] = [];
+          dados[key].push(el.value);
+        } else {
+          dados[key] = el.value;
+        }
+      });
+      return dados;
+    }
+
+    function salvarLocal() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(coletarFormLocal()));
+        const el = document.getElementById('autosave-status');
+        const agora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+        el.textContent = 'Salvo localmente às ' + agora;
+        el.className = 'autosave-status saved';
+        setTimeout(() => { el.className = 'autosave-status'; }, 3000);
+      } catch(e) {}
+    }
+
+    function restaurarLocal() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        // Só restaurar se o form estiver majoritariamente vazio
+        const dados = JSON.parse(saved);
+        const form = document.getElementById('form-relatorio');
+        let vazio = true;
+        form.querySelectorAll('textarea[name]').forEach(el => {
+          if (el.value.trim()) vazio = false;
+        });
+        if (!vazio) return; // Dados do servidor têm prioridade
+        form.querySelectorAll('input[name], textarea[name]').forEach(el => {
+          if (el.type === 'file' || el.type === 'hidden') return;
+          const key = el.name;
+          if (dados[key] !== undefined && !dados[key + '[]']) {
+            el.value = dados[key] || el.value;
+          }
+        });
+      } catch(e) {}
+    }
+
+    // Auto-save a cada 20 segundos e em mudanças
+    let autoSaveTimer;
+    document.getElementById('form-relatorio').addEventListener('input', () => {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(salvarLocal, 2000);
+    });
+    setInterval(salvarLocal, 20000);
+
+    // ─── TÉCNICOS ─────────────────────────────────────────
     function adicionarTecnico() {
       const container = document.getElementById('tecnicos-container');
       const div = document.createElement('div');
-      div.className = 'campo tecnico-item';
-      div.innerHTML = '<input type="text" name="tecnicos[]" placeholder="Nome do técnico">';
+      div.className = 'tecnico-item';
+      div.innerHTML = '<input type="text" name="tecnicos[]" placeholder="Nome do técnico">' +
+        '<button type="button" class="btn-remove-tecnico" onclick="removerTecnico(this)" title="Remover">×</button>';
       container.appendChild(div);
+      div.querySelector('input').focus();
     }
+
+    function removerTecnico(btn) {
+      const container = document.getElementById('tecnicos-container');
+      if (container.children.length <= 1) {
+        btn.closest('.tecnico-item').querySelector('input').value = '';
+        return;
+      }
+      btn.closest('.tecnico-item').remove();
+    }
+
+    // ─── FOTOS EXISTENTES ─────────────────────────────────
+    function removerFotoExistente(nomeFoto) {
+      const el = document.getElementById('preview-' + nomeFoto);
+      if (el) {
+        el.style.transition = 'opacity 0.2s, transform 0.2s';
+        el.style.opacity = '0';
+        el.style.transform = 'scale(0.8)';
+        setTimeout(() => el.remove(), 200);
+      }
+    }
+
+    // ─── PREVIEW NOVAS FOTOS ──────────────────────────────
+    function previewNovasFotos(input) {
+      const galeria = document.getElementById('galeria-preview');
+      const arquivos = Array.from(input.files);
+
+      arquivos.forEach(arquivo => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const div = document.createElement('div');
+          div.className = 'preview-item';
+          div.innerHTML = `
+            <img src="${e.target.result}" alt="${arquivo.name}">
+            <span class="foto-nome">${arquivo.name}</span>
+          `;
+          galeria.appendChild(div);
+        };
+        reader.readAsDataURL(arquivo);
+      });
+
+      const txt = arquivos.length === 1
+        ? '1 foto selecionada'
+        : arquivos.length + ' fotos selecionadas';
+      document.querySelector('.foto-upload-text').innerHTML =
+        '<strong>' + txt + '</strong><br>Toque para adicionar mais';
+    }
+
+    // ─── GERAR RELATÓRIO ──────────────────────────────────
+    function gerarRelatorio() {
+      salvarLocal();
+      if (confirm('Salvar rascunho e gerar relatório final?')) {
+        document.getElementById('form-gerar').submit();
+      }
+    }
+
+    // Inicializar
+    restaurarLocal();
   </script>
 
 </body>
