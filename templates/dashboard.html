@@ -2,48 +2,103 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatórios em Andamento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Relatórios de Campo</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="dashboard-body">
 
-  <div class="dashboard-container">
-    <div class="dashboard-header">
-      <div>
-        <h1>Relatórios de Campo</h1>
-        <p>Gerencie relatórios em andamento e finalizados</p>
-      </div>
+  <div id="offline-banner">Sem conexão — modo offline ativo</div>
 
+  <div class="dashboard-container">
+
+    <div class="dashboard-header">
+      <div class="header-left">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+        <div>
+          <h1>Relatórios de Campo</h1>
+          <p>{{ rascunhos|length }} relatório{{ 's' if rascunhos|length != 1 else '' }} em andamento</p>
+        </div>
+      </div>
       <a href="{{ url_for('novo_relatorio') }}" class="btn-principal">
-        + Novo Relatório
+        + Novo
       </a>
     </div>
 
+    {% if rascunhos %}
     <div class="dashboard-grid">
       {% for rascunho in rascunhos %}
-      <a href="{{ url_for('editar_relatorio', relatorio_id=rascunho.id) }}" class="card-relatorio">
-        <div class="card-topo">
-          <h2>{{ rascunho.titulo }}</h2>
-          <span class="badge-status">Em andamento</span>
+      <div class="card-relatorio">
+        <a href="{{ url_for('editar_relatorio', relatorio_id=rascunho.id) }}" style="text-decoration:none;color:inherit;display:block;">
+          <div class="card-topo">
+            <h2>{{ rascunho.titulo }}</h2>
+            <span class="badge-status">Em andamento</span>
+          </div>
+          <div class="card-info">
+            {% if rascunho.chassi %}
+            <p><strong>Chassi:</strong> {{ rascunho.chassi }}</p>
+            {% endif %}
+            {% if rascunho.modelo %}
+            <p><strong>Modelo:</strong> {{ rascunho.modelo }}</p>
+            {% endif %}
+            {% if rascunho.proprietario %}
+            <p><strong>Proprietário:</strong> {{ rascunho.proprietario }}</p>
+            {% endif %}
+            {% if rascunho.ultima_edicao %}
+            <p><strong>Última edição:</strong> {{ rascunho.ultima_edicao }}</p>
+            {% endif %}
+            {% if rascunho.num_fotos %}
+            <p><strong>Fotos:</strong> {{ rascunho.num_fotos }}</p>
+            {% endif %}
+          </div>
+        </a>
+        <div class="card-actions">
+          <a href="{{ url_for('editar_relatorio', relatorio_id=rascunho.id) }}" class="btn-secundario" style="font-size:13px;padding:7px 14px;">
+            Editar
+          </a>
+          <form action="{{ url_for('excluir_rascunho', relatorio_id=rascunho.id) }}" method="POST"
+                onsubmit="return confirm('Excluir este relatório e todas as fotos? Esta ação não pode ser desfeita.')">
+            <button type="submit" class="btn-danger-sm">Excluir</button>
+          </form>
         </div>
-
-        <div class="card-info">
-          <p><strong>Chassi:</strong> {{ rascunho.chassi }}</p>
-          <p><strong>Data:</strong> {{ rascunho.data_relatorio }}</p>
-          <p><strong>Última edição:</strong> {{ rascunho.ultima_edicao }}</p>
-        </div>
-      </a>
+      </div>
       {% endfor %}
     </div>
 
-    {% if not rascunhos %}
+    {% else %}
     <div class="sem-relatorios">
-      <h2>Nenhum relatório cadastrado</h2>
-      <p>Clique em “Novo Relatório” para começar.</p>
+      <div style="font-size:48px;margin-bottom:16px">📋</div>
+      <h2>Nenhum relatório ainda</h2>
+      <p>Toque em "Novo" para criar o primeiro relatório de campo.</p>
+      <div style="margin-top:20px">
+        <a href="{{ url_for('novo_relatorio') }}" class="btn-principal">+ Novo Relatório</a>
+      </div>
     </div>
     {% endif %}
+
   </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+
+    function atualizarOffline() {
+      const banner = document.getElementById('offline-banner');
+      if (!navigator.onLine) {
+        banner.classList.add('visible');
+        document.body.classList.add('offline-active');
+      } else {
+        banner.classList.remove('visible');
+        document.body.classList.remove('offline-active');
+      }
+    }
+    window.addEventListener('online', atualizarOffline);
+    window.addEventListener('offline', atualizarOffline);
+    atualizarOffline();
+  </script>
 
 </body>
 </html>
