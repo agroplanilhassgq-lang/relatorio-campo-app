@@ -115,29 +115,6 @@
       {% endfor %}
     {% endif %}
 
-    <!-- ASSINATURA -->
-    <section class="card">
-      <h2>Assinaturas</h2>
-      <div class="assinatura-grid">
-        <div class="assinatura-item">
-          <div style="height:50px"></div>
-          <div class="assinatura-linha"></div>
-          <div class="assinatura-label">
-            {% if dados.tecnicos and dados.tecnicos[0] %}
-              {{ dados.tecnicos[0] }} — Técnico Responsável
-            {% else %}
-              Técnico Responsável
-            {% endif %}
-          </div>
-        </div>
-        <div class="assinatura-item">
-          <div style="height:50px"></div>
-          <div class="assinatura-linha"></div>
-          <div class="assinatura-label">{{ dados.proprietario or 'Proprietário / Responsável' }}</div>
-        </div>
-      </div>
-    </section>
-
   </div>
 
 </body>
